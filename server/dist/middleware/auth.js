@@ -21,3 +21,4 @@ const auth = (req, res, next) => {
         next();
     });
 };
+exports.default = auth;

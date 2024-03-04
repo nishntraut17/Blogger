@@ -22,10 +22,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const user = __importStar(require("../controllers/user"));
+const auth_validator_1 = require("../validator/auth-validator");
+const validate_middleware_1 = __importDefault(require("../middleware/validate-middleware"));
 const router = (0, express_1.Router)();
-router.post("/register", user.register);
+router.post("/register", (0, validate_middleware_1.default)(auth_validator_1.authValidator), user.register);
 router.post("/login", user.login);
 exports.default = router;

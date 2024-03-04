@@ -27,3 +27,5 @@ const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
         next();
     });
 }
+
+export default auth;

@@ -4,6 +4,7 @@ import userRoutes from './routes/user';
 import blogRoutes from './routes/blog';
 import dotenv from 'dotenv';
 import client from './db/conn';
+import { redisClient } from './db/redis';
 
 const app = express();
 dotenv.config();
