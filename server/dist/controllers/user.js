@@ -16,7 +16,7 @@ exports.login = exports.register = void 0;
 const user_1 = __importDefault(require("../models/user"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log(req.body);
         const salt = yield bcrypt_1.default.genSalt(10);
@@ -30,7 +30,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(201).json(user);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 exports.register = register;

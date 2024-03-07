@@ -1,9 +1,9 @@
 import User from "../models/user";
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jsonwebtoken from 'jsonwebtoken';
 
-const register = async (req: Request, res: Response) => {
+const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(req.body)
         const salt = await bcrypt.genSalt(10);
@@ -17,7 +17,7 @@ const register = async (req: Request, res: Response) => {
         res.status(201).json(user);
 
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 }
 

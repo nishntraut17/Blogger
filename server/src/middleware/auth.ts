@@ -20,7 +20,7 @@ const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
     jsonwebtoken.verify(token, process.env.JWT_TOKEN as string, (err: any, decoded: any) => {
         if (err) {
             console.error("JWT verification error:", err);
-            res.status(401).send("Unauthorized");
+            res.status(401).send("Yaha pe error hai");
             return;
         }
         req.user = decoded;

@@ -1,6 +1,12 @@
 import blog from "../models/blog";
 import { Request, Response } from 'express';
 import { redisClient } from "../db/redis";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const randomBytes = crypto.randomBytes(8).toString('hex');
 
 interface AuthRequest extends Request {
     user?: {
@@ -9,16 +15,40 @@ interface AuthRequest extends Request {
     };
 }
 
+const s3 = new S3Client({
+    region: process.env.AWS_S3_REGION as string,
+    credentials: {
+        accessKeyId: process.env.AWS_S3_ACCESS_KEY as string,
+        secretAccessKey: process.env.AWS_S3_SECRET_KEY as string,
+    }
+});
+
 const createBlog = async (req: AuthRequest, res: Response) => {
     try {
+        if (!req.file) {
+            return res.status(400).json('No image provided');
+        }
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: `${randomBytes}-${req.file.originalname}`,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype,
+        }
+        const command = new PutObjectCommand(params);
+        await s3.send(command);
+
+        const image = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${params.Key}`;
+
         const rateLimit = await redisClient.get(`RATE_LIMIT:${req.user?._id}`);
         if (rateLimit && parseInt(rateLimit) >= 5) {
             return res.status(429).json('Too many requests');
         }
+
         await redisClient.del('blogs');
         const newBlog = new blog({
             title: req.body.title,
             content: req.body.content,
+            image,
             author: req.user?._id
         });
         await redisClient.setex(`RATE_LIMIT:${req.user?._id}`, 60, '0');
@@ -26,6 +56,7 @@ const createBlog = async (req: AuthRequest, res: Response) => {
         res.status(201).json(savedBlog);
     }
     catch (error: any) {
+        console.log("Here is the error 1");
         res.status(500).json({ message: error.message });
     }
 }
@@ -63,4 +94,4 @@ const getBlog = async (req: Request, res: Response) => {
     }
 }
 
-export { createBlog, getBlogs, getBlog };
+export { getBlogs, getBlog, createBlog };

@@ -14,7 +14,7 @@ const auth = (req, res, next) => {
     jsonwebtoken_1.default.verify(token, process.env.JWT_TOKEN, (err, decoded) => {
         if (err) {
             console.error("JWT verification error:", err);
-            res.status(401).send("Unauthorized");
+            res.status(401).send("Yaha pe error hai");
             return;
         }
         req.user = decoded;
