@@ -7,6 +7,9 @@ import blogRoutes from './routes/blog';
 import dotenv from 'dotenv';
 import client from './db/conn';
 import errorMiddleware from './middleware/error-middleware';
+import Notification from './models/notification';
+import getNotifications from "./controllers/notification";
+import { IoT1ClickProjects } from 'aws-sdk';
 dotenv.config();
 
 const app = express();
@@ -28,17 +31,21 @@ app.use('/user', userRoutes);
 app.use('/blog', blogRoutes);
 app.use(errorMiddleware);
 
+app.get('/user/notifications', getNotifications);
+
 io.on("connection", (socket) => {
     console.log('User connected', socket.id);
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
-    socket.on('message', (message) => {
-        console.log('Message received', message);
-        socket.broadcast.emit('message', message);
+    socket.on('name', (name) => {
+        socket.broadcast.emit('name', name);
     });
-    socket.emit(`'welcome', 'Welcome to the server, your id is ${socket.id}`);
-})
+    socket.on('notification', async (name) => {
+        io.emit('notification', { message: `${name} has added new blog`, read: false });
+        await Notification.create({ message: `${name} has added new blog` });
+    });
+});
 
 server.listen(process.env.PORT, () => {
     console.log('Server running on port ', process.env.PORT);
